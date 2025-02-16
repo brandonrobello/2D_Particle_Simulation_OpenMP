@@ -1,3 +1,5 @@
-build/
+build*/
+serial_out*/
 .idea/
 cmake-build-*/
+
