@@ -163,20 +163,6 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
         }
     }
 
-    // Move particles and reassign to new bins
-	#pragma omp parallel for schedule(dynamic)
-    for (int i = 0; i < num_parts; ++i) {
-        move(parts[i], size);
-        int bx, by;
-        get_bin_index(parts[i].x, parts[i].y, bx, by, size);
-        // Check bounds before accessing vector
-        if (bx >= 0 && bx < bin_count_x && by >= 0 && by < bin_count_y) {
-            (*next_bins)[bx][by].particles.push_back(&parts[i]);
-        } else {
-            printf("Warning: Particle moved out of bounds: (%f, %f)\n", parts[i].x, parts[i].y);
-        }
-    }
-
 	// Move particles and reassign to new bins
 	#pragma omp parallel for collapse(2) schedule(dynamic)
 	for (int bx = 0; bx < bin_count_x; ++bx) {
