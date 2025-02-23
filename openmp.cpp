@@ -127,7 +127,7 @@ void apply_force_binning(particle_t& particle, Bin& bin) {
 
 // Optimized force calculation considering only necessary bins
 void compute_forces() {
-	#pragma omp parallel for collapse(2) schedule(dynamic)
+	#pragma omp for collapse(2)
     for (int i = 0; i < bin_count_x; ++i) {
         for (int j = 0; j < bin_count_y; ++j) {
             Bin& bin = (*current_bins)[i][j];
@@ -156,7 +156,7 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     compute_forces();
 
     // Reset next_bins
-	#pragma omp parallel for collapse(2)
+	#pragma omp for collapse(2)
     for (int i = 0; i < bin_count_x; ++i) {
         for (int j = 0; j < bin_count_y; ++j) {
             (*next_bins)[i][j].particles.clear();
@@ -164,7 +164,7 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
     }
 
 	// Move particles and reassign to new bins
-	#pragma omp parallel for collapse(2) schedule(dynamic)
+	#pragma omp for collapse(2)
 	for (int bx = 0; bx < bin_count_x; ++bx) {
 		for (int by = 0; by < bin_count_y; ++by) {
 			// Process each particle in this bin.
@@ -183,5 +183,6 @@ void simulate_one_step(particle_t* parts, int num_parts, double size) {
 	}
 
     // Swap frames
+    #pragma omp single
     std::swap(current_bins, next_bins);
 }
