@@ -20,8 +20,16 @@ typedef struct particle_t {
     double ay; // Acceleration Y
 } particle_t;
 
+// Structure to hold timing data for one simulation step
+struct TimingData {
+    double total_time;
+    double computation_time;
+    double synchronization_time;
+    double communication_time;
+};
+
 // Simulation routine
 void init_simulation(particle_t* parts, int num_parts, double size);
-void simulate_one_step(particle_t* parts, int num_parts, double size);
+void simulate_one_step(particle_t* parts, int num_parts, double size, TimingData& timedata)
 
 #endif

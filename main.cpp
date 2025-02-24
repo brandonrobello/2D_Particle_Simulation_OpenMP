@@ -121,12 +121,15 @@ int main(int argc, char** argv) {
 
     init_simulation(parts, num_parts, size);
 
+    // Initialize for tracking
+    TimingData timeData = {0.0, 0.0, 0.0, 0.0};
+
 #ifdef _OPENMP
 #pragma omp parallel default(shared)
 #endif
     {
         for (int step = 0; step < nsteps; ++step) {
-            simulate_one_step(parts, num_parts, size);
+            simulate_one_step(parts, num_parts, size, timeData);
 
             // Save state if necessary
 #ifdef _OPENMP
@@ -145,6 +148,8 @@ int main(int argc, char** argv) {
 
     // Finalize
     std::cout << "Simulation Time = " << seconds << " seconds for " << num_parts << " particles.\n";
+    std::cout << "time Data: total = " << timeData.total_time << ", computation = " << timeData.computation_time \
+            << ", synchronization = " << timeData.synchronization_time << ", communcation = " << timeData.communication_time << "\n";
     fsave.close();
     delete[] parts;
 }

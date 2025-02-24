@@ -22,7 +22,7 @@ time_log_file = os.path.join(out_folder, "simulation_times.txt")
 with open(time_log_file, "w") as log_file:
     for n in n_particles_values:
         command = ["./build_2/serial", "-n", str(n), "-o", f"{out_folder}/serial_{n}.out", "-s", "21"]
-        result = subprocess.run(command, capture_output=True, text=True)
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         
         # Print stdout for debugging
         print(f"STDOUT for n={n}:", result.stdout)
