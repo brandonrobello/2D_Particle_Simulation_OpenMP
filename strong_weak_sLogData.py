@@ -11,7 +11,7 @@ time_log_file = os.path.join(out_folder, "strong_weak_times.txt")
 
 # Run the commands directly using subprocess and capture output
 with open(time_log_file, "w") as log_file:
-    for threads in [1, 2, 4, 8, 16, 32, 64]:
+    for threads in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
         env = os.environ.copy()
         env["OMP_NUM_THREADS"] = str(threads)
 
@@ -22,7 +22,7 @@ with open(time_log_file, "w") as log_file:
             print(f"Parallel {threads} {n}")
             
             command = ["./build/openmp", "-n", str(n), "-s", "21"]
-            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, env=env)
             # result = subprocess.run(command, capture_output=True, text=True, env=env)
             
             # Extract simulation time from stdout
@@ -45,7 +45,7 @@ with open(time_log_file, "w") as log_file:
             print(f"Parallel {threads} {parts_per_thread} {n}")
 
             command = ["./build/openmp", "-n", str(n), "-s", "21"]
-            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, env=env)
             # result = subprocess.run(command, capture_output=True, text=True, env=env)
             
             # Extract simulation time from stdout

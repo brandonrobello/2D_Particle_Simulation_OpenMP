@@ -89,8 +89,6 @@ void init_simulation(particle_t* parts, int num_parts, double size) {
     bin_count_x = static_cast<int>(size / bin_size);
     bin_count_y = static_cast<int>(size / bin_size);
 
-    // printf("Total bins: %d (bin_count_x: %d, bin_count_y: %d)\n", bin_count_x * bin_count_y, bin_count_x, bin_count_y);
-
     // Resize and initialize bins
     bins_frame_1.assign(bin_count_x, std::vector<Bin>(bin_count_y));
     bins_frame_2.assign(bin_count_x, std::vector<Bin>(bin_count_y));
