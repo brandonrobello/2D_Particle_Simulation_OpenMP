@@ -4,18 +4,22 @@
 #include <vector>
 #include <cstdio>
 
+// Precompute constants
+static const double cutoff2 = cutoff * cutoff;
+static const double min_r2 = min_r * min_r;
+
 // Apply the force from neighbor to particle
-void apply_force(particle_t& particle, particle_t& neighbor) {
+inline void apply_force(particle_t& particle, particle_t& neighbor) {
     // Calculate Distance
     double dx = neighbor.x - particle.x;
     double dy = neighbor.y - particle.y;
     double r2 = dx * dx + dy * dy;
 
     // Check if the two particles should interact
-    if (r2 > cutoff * cutoff)
+    if (r2 > cutoff2)
         return;
 
-    r2 = fmax(r2, min_r * min_r);
+    r2 = fmax(r2, min_r2);
     double r = sqrt(r2);
 
     // Very simple short-range repulsive force
@@ -25,7 +29,7 @@ void apply_force(particle_t& particle, particle_t& neighbor) {
 }
 
 // Integrate the ODE
-void move(particle_t& p, double size) {
+inline void move(particle_t& p, double size) {
     // Slightly simplified Velocity Verlet integration
     // Conserves energy better than explicit Euler method
     p.vx += p.ax * dt;
@@ -34,12 +38,12 @@ void move(particle_t& p, double size) {
     p.y += p.vy * dt;
 
     // Bounce from walls
-    while (p.x < 0 || p.x > size) {
+    if (p.x < 0 || p.x > size) {
         p.x = p.x < 0 ? -p.x : 2 * size - p.x;
         p.vx = -p.vx;
     }
 
-    while (p.y < 0 || p.y > size) {
+    if (p.y < 0 || p.y > size) {
         p.y = p.y < 0 ? -p.y : 2 * size - p.y;
         p.vy = -p.vy;
     }
@@ -48,7 +52,7 @@ void move(particle_t& p, double size) {
 // ================== Left Alone ==============================
 
 // Define bin size
-const double bin_size = 1.2 * cutoff;
+static const double bin_size = 1.2 * cutoff;
 
 // Bin struct to hold particles
 struct Bin {
@@ -63,7 +67,7 @@ std::vector<std::vector<Bin>>* next_bins;
 int bin_count_x, bin_count_y;
 
 // Compute bin index for a given position
-void get_bin_index(double x, double y, int& bx, int& by, double size) {
+inline void get_bin_index(double x, double y, int& bx, int& by, double size) {
     // Apply the same reflection logic as move()
     if (x < 0) x = -x;
     if (x > size) x = 2 * size - x;
@@ -84,6 +88,8 @@ void get_bin_index(double x, double y, int& bx, int& by, double size) {
 void init_simulation(particle_t* parts, int num_parts, double size) {
     bin_count_x = static_cast<int>(size / bin_size);
     bin_count_y = static_cast<int>(size / bin_size);
+
+    // printf("Total bins: %d (bin_count_x: %d, bin_count_y: %d)\n", bin_count_x * bin_count_y, bin_count_x, bin_count_y);
 
     // Resize and initialize bins
     bins_frame_1.assign(bin_count_x, std::vector<Bin>(bin_count_y));
@@ -116,8 +122,8 @@ void init_simulation(particle_t* parts, int num_parts, double size) {
     }
 }
 
-// Apply force with binning for all neighbors of particles
-void apply_force_binning(particle_t& particle, Bin& bin) {
+// Apply force with binning for all neighbors of a particle
+inline void apply_force_binning(particle_t& particle, Bin& bin) {
     for (auto neighbor : bin.particles) {
         if (neighbor != &particle) {
             apply_force(particle, *neighbor);
@@ -133,8 +139,8 @@ void compute_forces() {
             Bin& bin = (*current_bins)[i][j];
 
             for (auto p : bin.particles) {
-            // Reset acceleration before force accumulation
-            p->ax = p->ay = 0;
+                // Reset acceleration before force accumulation
+                p->ax = p->ay = 0;
                 // Check self-bin and neighboring bins within cutoff
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dy = -1; dy <= 1; dy++) {
@@ -152,7 +158,7 @@ void compute_forces() {
 
 // Simulate one step with binning using double buffering
 void simulate_one_step(particle_t* parts, int num_parts, double size) {
-    // Compute Forces using optimized binning
+    // Compute forces using optimized binning
     compute_forces();
 
     // Reset next_bins

@@ -3,13 +3,12 @@ import subprocess
 import os
 
 # Create output folder
-## CHANGE OUTFOLDER TO DESIRED FOLDER
-out_folder = "serial_out_2"
+out_folder = "results"
 os.makedirs(out_folder, exist_ok=True)
 
 # Define the range for n_particles
-n_min = 100
-n_max = 100000
+n_min = 1000
+n_max = 1000000
 num_values = 10  # Number of values in the series
 
 # Generate a semilog spaced series
@@ -20,12 +19,13 @@ time_log_file = os.path.join(out_folder, "simulation_times.txt")
 
 # Run the commands directly using subprocess and capture output
 with open(time_log_file, "w") as log_file:
+    log_file.write("Serial:\n")
     for n in n_particles_values:
-        command = ["./build_2/serial", "-n", str(n), "-o", f"{out_folder}/serial_{n}.out", "-s", "21"]
-        result = subprocess.run(command, capture_output=True, text=True)
-        
-        # Print stdout for debugging
-        print(f"STDOUT for n={n}:", result.stdout)
+        print(f"Serial {n}")
+
+        command = ["./build/serial", "-n", str(n), "-s", "21"]
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        # result = subprocess.run(command, capture_output=True, text=True)
         
         # Extract simulation time from stdout
         for line in result.stdout.split("\n"):
@@ -35,5 +35,29 @@ with open(time_log_file, "w") as log_file:
                     time_value = parts[1].split()[0]
                     log_file.write(f"{n} {time_value}\n")
                     break
+        
+        print(f"Serial {n} {time_value}")
 
-print("All serial jobs have been executed and logged.")
+    thread_counts = [1, 4, 16, 64]
+    for threads in thread_counts:
+        log_file.write(f"Parallel ({threads} threads):\n")
+        for n in n_particles_values:
+            env = os.environ.copy()
+            env["OMP_NUM_THREADS"] = str(threads)
+
+            print(f"Parallel {threads} {n}")
+
+            command = ["./build/openmp", "-n", str(n), "-s", "21"]
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            # result = subprocess.run(command, capture_output=True, text=True, env=env)
+            
+            # Extract simulation time from stdout
+            for line in result.stdout.split("\n"):
+                if "Simulation Time" in line:
+                    parts = line.split("=")
+                    if len(parts) > 1:
+                        time_value = parts[1].split()[0]
+                        log_file.write(f"{n} {time_value}\n")
+                        break
+
+            print(f"Parallel {threads} {n} {time_value}")

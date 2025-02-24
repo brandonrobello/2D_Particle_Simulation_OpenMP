@@ -1,0 +1,56 @@
+Strong (1 threads, 1000 particles): 0.165626
+Strong (1 threads, 10000 particles): 0.569243
+Strong (1 threads, 100000 particles): 2.30385
+Strong (1 threads, 1000000 particles): 23.8509
+Weak (1 threads, 1000 parts per thread): 0.136567
+Weak (1 threads, 2000 parts per thread): 0.157705
+Weak (1 threads, 5000 parts per thread): 0.364065
+Weak (1 threads, 10000 parts per thread): 0.770283
+Strong (2 threads, 1000 particles): 0.665792
+Strong (2 threads, 10000 particles): 0.49862
+Strong (2 threads, 100000 particles): 2.28191
+Strong (2 threads, 1000000 particles): 18.3919
+Weak (2 threads, 1000 parts per thread): 0.175966
+Weak (2 threads, 2000 parts per thread): 0.386714
+Weak (2 threads, 5000 parts per thread): 0.497246
+Weak (2 threads, 10000 parts per thread): 0.970186
+Strong (4 threads, 1000 particles): 0.127869
+Strong (4 threads, 10000 particles): 0.52763
+Strong (4 threads, 100000 particles): 2.45513
+Strong (4 threads, 1000000 particles): 27.8278
+Weak (4 threads, 1000 parts per thread): 0.249872
+Weak (4 threads, 2000 parts per thread): 0.567201
+Weak (4 threads, 5000 parts per thread): 0.856384
+Weak (4 threads, 10000 parts per thread): 1.3573
+Strong (8 threads, 1000 particles): 0.139195
+Strong (8 threads, 10000 particles): 0.521521
+Strong (8 threads, 100000 particles): 2.30693
+Strong (8 threads, 1000000 particles): 24.9352
+Weak (8 threads, 1000 parts per thread): 0.491663
+Weak (8 threads, 2000 parts per thread): 0.758379
+Weak (8 threads, 5000 parts per thread): 1.37412
+Weak (8 threads, 10000 parts per thread): 2.0155
+Strong (16 threads, 1000 particles): 0.968595
+Strong (16 threads, 10000 particles): 0.560831
+Strong (16 threads, 100000 particles): 3.65712
+Strong (16 threads, 1000000 particles): 17.0064
+Weak (16 threads, 1000 parts per thread): 1.29272
+Weak (16 threads, 2000 parts per thread): 1.26475
+Weak (16 threads, 5000 parts per thread): 1.99874
+Weak (16 threads, 10000 parts per thread): 3.06336
+Strong (32 threads, 1000 particles): 0.139409
+Strong (32 threads, 10000 particles): 0.563796
+Strong (32 threads, 100000 particles): 2.3331
+Strong (32 threads, 1000000 particles): 27.2737
+Weak (32 threads, 1000 parts per thread): 1.27226
+Weak (32 threads, 2000 parts per thread): 1.87421
+Weak (32 threads, 5000 parts per thread): 3.1083
+Weak (32 threads, 10000 parts per thread): 6.17679
+Strong (64 threads, 1000 particles): 0.126911
+Strong (64 threads, 10000 particles): 0.737079
+Strong (64 threads, 100000 particles): 2.31548
+Strong (64 threads, 1000000 particles): 23.2186
+Weak (64 threads, 1000 parts per thread): 1.82695
+Weak (64 threads, 2000 parts per thread): 2.55863
+Weak (64 threads, 5000 parts per thread): 5.97705
+Weak (64 threads, 10000 parts per thread): 17.0842
