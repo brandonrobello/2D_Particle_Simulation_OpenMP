@@ -82,6 +82,7 @@ void get_bin_index(double x, double y, int& bx, int& by, double size) {
 
 // Initialize bins based on the simulation domain size
 void init_simulation(particle_t* parts, int num_parts, double size) {
+
     bin_count_x = static_cast<int>(size / bin_size);
     bin_count_y = static_cast<int>(size / bin_size);
 
@@ -150,39 +151,88 @@ void compute_forces() {
     }
 }
 
-// Simulate one step with binning using double buffering
-void simulate_one_step(particle_t* parts, int num_parts, double size) {
-    // Compute Forces using optimized binning
-    compute_forces();
+// Simulate one step with binning using double buffering.
+// Timing is measured only by the master thread, with explicit barriers.
+void simulate_one_step(particle_t* parts, int num_parts, double size, TimingData &timedata) {
+    double t_start_total, t_end_total;
+    double t_start_comp, t_end_comp;
+    double t_start_sync, t_end_sync;
+    double t_start_comm, t_end_comm;
 
-    // Reset next_bins
-	#pragma omp for collapse(2)
+    // Overall start time (only master thread)
+    #pragma omp master
+    {
+        t_start_total = omp_get_wtime();
+    }
+    #pragma omp barrier
+
+    // Computation Phase: Force Calculation
+    #pragma omp master
+    {
+        t_start_comp = omp_get_wtime();
+    }
+    // Compute forces in parallel
+    compute_forces();
+    #pragma omp barrier
+    #pragma omp master
+    {
+        t_end_comp = omp_get_wtime();
+        timedata.computation_time += (t_end_comp - t_start_comp);
+    }
+    #pragma omp barrier
+
+    // Synchronization Phase: Clearing Next Bins
+    #pragma omp master
+    {
+        t_start_sync = omp_get_wtime();
+    }
+    #pragma omp for collapse(2)
     for (int i = 0; i < bin_count_x; ++i) {
         for (int j = 0; j < bin_count_y; ++j) {
             (*next_bins)[i][j].particles.clear();
         }
     }
+    #pragma omp barrier
+    #pragma omp master
+    {
+        t_end_sync = omp_get_wtime();
+        timedata.synchronization_time += (t_end_sync - t_start_sync);
+    }
+    #pragma omp barrier
 
-	// Move particles and reassign to new bins
-	#pragma omp for collapse(2)
-	for (int bx = 0; bx < bin_count_x; ++bx) {
-		for (int by = 0; by < bin_count_y; ++by) {
-			// Process each particle in this bin.
-			Bin& current_bin = (*current_bins)[bx][by];
-			for (auto p : current_bin.particles) {
-				move(*p, size);
-				int new_bx, new_by;
-				get_bin_index(p->x, p->y, new_bx, new_by, size);
-
-				// Lock the next_bin and update
-				omp_set_lock(&((*next_bins)[new_bx][new_by].lock));
-				(*next_bins)[new_bx][new_by].particles.push_back(p);
-				omp_unset_lock(&((*next_bins)[new_bx][new_by].lock));
-			}
-		}
-	}
-
-    // Swap frames
-    #pragma omp single
-    std::swap(current_bins, next_bins);
+    // Communication Phase: Moving Particles and Reassigning to Bins
+    #pragma omp master
+    {
+        t_start_comm = omp_get_wtime();
+    }
+    #pragma omp for collapse(2)
+    for (int bx = 0; bx < bin_count_x; ++bx) {
+        for (int by = 0; by < bin_count_y; ++by) {
+            Bin &current_bin = (*current_bins)[bx][by];
+            for (auto p : current_bin.particles) {
+                move(*p, size);
+                int new_bx, new_by;
+                get_bin_index(p->x, p->y, new_bx, new_by, size);
+                omp_set_lock(&((*next_bins)[new_bx][new_by].lock));
+                (*next_bins)[new_bx][new_by].particles.push_back(p);
+                omp_unset_lock(&((*next_bins)[new_bx][new_by].lock));
+            }
+        }
+    }
+    // Swap bin buffers using the master thread.
+    #pragma omp master
+    {
+        std::swap(current_bins, next_bins);
+    }
+    #pragma omp barrier
+    #pragma omp master
+    {
+        t_end_comm = omp_get_wtime();
+        t_end_total = omp_get_wtime();
+        timedata.communication_time += (t_end_comm - t_start_comm);
+        timedata.total_time += (t_end_total - t_start_total);
+    }
+    #pragma omp barrier
 }
+
+
