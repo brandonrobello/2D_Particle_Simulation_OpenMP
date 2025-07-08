@@ -1,4 +1,4 @@
-# CS267 HW2.1 — Particle Simulation Optimization
+# Particle Simulation Optimization
 
 ## Contributions
 
